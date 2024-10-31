@@ -24,6 +24,8 @@ public final class ManualFeedbackTuner extends LinearOpMode {
                         drive.actionBuilder(new Pose2d(0, 0, 0))
                                 .lineToX(DISTANCE)
                                 .lineToX(0)
+//                                .turn(179)
+//                                .turn(-179)
                                 .build());
             }
         } else if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
@@ -43,8 +45,8 @@ public final class ManualFeedbackTuner extends LinearOpMode {
             while (opModeIsActive()) {
                 Actions.runBlocking(
                     drive.actionBuilder(new Pose2d(0, 0, 0))
-                            .lineToX(DISTANCE)
-                            .lineToX(0)
+                            .lineToY(DISTANCE)
+                            .lineToY(0)
                             .build());
             }
         } else {

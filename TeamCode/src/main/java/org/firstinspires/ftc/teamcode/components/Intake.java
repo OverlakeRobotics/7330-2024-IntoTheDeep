@@ -19,6 +19,10 @@ public class Intake {
     public static final double INTAKE_POWER = 1d;
     public static final double OUTTAKE_POWER = -0.4d;
 
+    private static final double SLOW_FACTOR = 0.5;
+
+    private boolean slowMode;
+
 
     private DcMotor arm;
     private DcMotor extend;
@@ -39,8 +43,8 @@ public class Intake {
         extend.setDirection(DcMotor.Direction.FORWARD);
         intake.setDirection(DcMotor.Direction.FORWARD);
 
-        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
@@ -102,9 +106,36 @@ public class Intake {
         arm.setPower(power);
     }
 
+    public void driveArmUp() {
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm.setPower(ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
+    }
+    public void driveArmDown() {
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm.setPower(-ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
+    }
+
+
     public void driveExtend(double power) {
         extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        extend.setPower(power);
+        extend.setPower(power * (slowMode ? SLOW_FACTOR : 1));
+    }
+
+    public void driveExtendUp() {
+        extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extend.setPower(ARM_EXTEND_POWER * (slowMode ? SLOW_FACTOR : 1));
+    }
+    public void driveExtendDown() {
+        extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extend.setPower(ARM_CONTRACT_POWER * (slowMode ? SLOW_FACTOR : 1));
+    }
+
+    public boolean isSlowMode() {
+        return slowMode;
+    }
+
+    public void setSlowMode (boolean slow) {
+        slowMode = slow;
     }
 
     public boolean driveToPos(DcMotor motor, int targetPos, double power) {

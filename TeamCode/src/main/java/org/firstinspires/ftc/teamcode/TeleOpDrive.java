@@ -22,6 +22,7 @@ public class TeleOpDrive extends OpMode {
         intake = new Intake(hardwareMap);
         drive = new Drive(hardwareMap);
 
+
     }
 
 
@@ -29,24 +30,26 @@ public class TeleOpDrive extends OpMode {
     @Override
     public void loop() {
 
-        float x = gamepad1.right_stick_x;
-        float y = gamepad1.right_stick_y;
-        float theta = gamepad1.left_stick_x;
+        float x = gamepad1.left_stick_x;
+        float y = gamepad1.left_stick_y;
+        float theta = gamepad1.right_stick_x;
 
         drive.drive(x, y, theta);
 
-        if (gamepad1.right_bumper) {
-            intake.driveArmUp();
-        }
         if (gamepad1.left_bumper) {
+            intake.driveArmUp();
+        } else if (gamepad1.right_bumper) {
             intake.driveArmDown();
+        } else {
+            intake.armStop();
         }
 
         if (gamepad1.right_trigger > 0.1) {
             intake.intake();
-        }
-        if (gamepad1.left_trigger > 0.1) {
+        } else if (gamepad1.left_trigger > 0.1) {
             intake.outtake();
+        } else {
+            intake.intakeStop();
         }
 
         if (gamepad1.a && !toggleA) {
@@ -64,7 +67,8 @@ public class TeleOpDrive extends OpMode {
         }
 
         if (gamepad1.x) {
-            //NOTHING
+            intake.resetArmPos();
+            intake.resetExtendPos();
         }
         if (gamepad1.y) {
             //TODO: Hang Routine
@@ -74,11 +78,23 @@ public class TeleOpDrive extends OpMode {
         if (gamepad1.dpad_up) {
             intake.driveExtendUp();
         }
-        if (gamepad1.dpad_down) {
+        else if (gamepad1.dpad_down) {
             intake.driveExtendDown();
+        } else {
+            intake.extendStop();
         }
 
 
+        telemetryData();
 
+    }
+
+    private void telemetryData() {
+        telemetry.addData("Arm Motor value:", intake.getArmPos());
+        telemetry.addData("Extend Motor value:", intake.getExtendPos());
+
+        telemetry.addData("Drive Speed:", drive.isSlowMode() ? "SLOW" : "FAST");
+        telemetry.addData("Arm Speed:", intake.isSlowMode() ? "SLOW" : "FAST");
+        telemetry.update();
     }
 }

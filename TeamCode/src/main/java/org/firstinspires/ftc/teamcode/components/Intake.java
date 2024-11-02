@@ -6,18 +6,18 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class Intake {
 
     public static final int ARM_GROUND_POS = 0;
-    public static final int ARM_LIFT_POS = 0;
+    public static final int ARM_LIFT_POS = 1000;
     public static final int ARM_LOW_BASKET_POS = 0;
-    public static final int ARM_HIGH_BASKET_POS = 0;
+    public static final int ARM_HIGH_BASKET_POS = 4800;
 
     public static final int ARM_CONTRACT_POS = 0;
-    public static final int ARM_EXTEND_POS = 0;
+    public static final int ARM_EXTEND_POS = 3800;
 
     public static final double ARM_POWER = 1d;
     public static final double ARM_EXTEND_POWER = 1d;
-    public static final double ARM_CONTRACT_POWER = 1d;
-    public static final double INTAKE_POWER = 1d;
-    public static final double OUTTAKE_POWER = -0.4d;
+    public static final double ARM_CONTRACT_POWER = -1d;
+    public static final double INTAKE_POWER = -1d;
+    public static final double OUTTAKE_POWER = 0.4d;
 
     private static final double SLOW_FACTOR = 0.5;
 
@@ -97,7 +97,7 @@ public class Intake {
     public void outtake() {
         intake.setPower(OUTTAKE_POWER);
     }
-    public void stop() {
+    public void intakeStop() {
         intake.setPower(0);
     }
 
@@ -114,6 +114,10 @@ public class Intake {
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         arm.setPower(-ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
     }
+    public void armStop () {
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm.setPower(0);
+    }
 
 
     public void driveExtend(double power) {
@@ -129,6 +133,10 @@ public class Intake {
         extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         extend.setPower(ARM_CONTRACT_POWER * (slowMode ? SLOW_FACTOR : 1));
     }
+    public void extendStop() {
+        extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extend.setPower(0);
+    }
 
     public boolean isSlowMode() {
         return slowMode;
@@ -137,6 +145,23 @@ public class Intake {
     public void setSlowMode (boolean slow) {
         slowMode = slow;
     }
+
+
+    public int getArmPos() {
+        return arm.getCurrentPosition();
+    }
+    public int getExtendPos() {
+        return extend.getCurrentPosition();
+    }
+    public void resetArmPos() {
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    public void resetExtendPos() {
+        extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
 
     public boolean driveToPos(DcMotor motor, int targetPos, double power) {
         if (motor.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {

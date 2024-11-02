@@ -1,16 +1,22 @@
 package org.firstinspires.ftc.teamcode.components;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Intake {
 
     public static final int ARM_GROUND_POS = 0;
-    public static final int ARM_LIFT_POS = 1000;
-    public static final int ARM_LOW_BASKET_POS = 0;
+    public static final int ARM_INTAKE_POS = 250;
+    public static final int ARM_LIFT_POS = 750;
+    public static final int ARM_LOW_BASKET_POS = 3000;
     public static final int ARM_HIGH_BASKET_POS = 4800;
 
     public static final int ARM_CONTRACT_POS = 0;
+    public static final int ARM_EXTEND_INTAKE_POS = 800;
     public static final int ARM_EXTEND_POS = 3800;
 
     public static final double ARM_POWER = 1d;
@@ -175,6 +181,297 @@ public class Intake {
 
         int offset = Math.abs(motor.getCurrentPosition() - targetPos);
         return offset < 50;
+    }
+
+    /**************************************************************************
+     ************************ AUTON ACTION CLASSES ****************************
+     **************************************************************************/
+
+    public Action armToLiftAuto() {
+        return new ArmToLiftAuto();
+    }
+    public Action armToHighBasketAuto() {
+        return new ArmToHighBasketAuto();
+    }
+    public Action armToLowBasketAuto() {
+        return new ArmToLowBasketAuto();
+    }
+    public Action contractAuto() {
+        return new ContractAuto();
+    }
+    public Action extendToIntakeAuto() {
+        return new ExtendToIntakeAuto();
+    }
+    public Action extend() {
+        return new ExtendAuto();
+    }
+    public Action intakeAuto () {
+        return new IntakeAuto();
+    }
+    public Action outtakeAuto () {
+        return new OuttakeAuto();
+    }
+
+    // Arm Classes
+    public class ArmToFloor implements Action {
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            if (!initialized) {
+                arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                arm.setPower(-ARM_POWER);
+                initialized = true;
+            }
+
+
+            int pos = getArmPos();
+            packet.put("armPos", pos);
+
+            if (pos > 0) {
+                return true;
+            } else {
+                arm.setPower(0);
+                return false;
+            }
+        }
+
+        public Action armToFloor() {
+            return new ArmToFloor();
+        }
+    }
+    public class ArmToLiftAuto implements Action {
+
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            if (!initialized) {
+                arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                if (getArmPos() > ARM_LIFT_POS) {
+                    arm.setPower(-ARM_POWER);
+                } else {
+                    arm.setPower(ARM_POWER);
+                }
+                initialized = true;
+            }
+
+
+            int pos = getArmPos();
+            packet.put("armPos", pos);
+
+            if (pos < ARM_LIFT_POS+50 && pos > ARM_LIFT_POS - 50) {
+                return true;
+            } else {
+                arm.setPower(0);
+                return false;
+            }
+        }
+
+    }
+    public class ArmToLowBasketAuto implements Action {
+
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            if (!initialized) {
+                arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                arm.setPower(ARM_POWER);
+                initialized = true;
+            }
+
+
+            int pos = getArmPos();
+            packet.put("armPos", pos);
+
+            if (pos < ARM_LOW_BASKET_POS) {
+                return true;
+            } else {
+                arm.setPower(0);
+                return false;
+            }
+        }
+
+    }
+    public class ArmToHighBasketAuto implements Action {
+
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            if (!initialized) {
+                arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                arm.setPower(ARM_POWER);
+                initialized = true;
+            }
+
+
+            int pos = getArmPos();
+            packet.put("armPos", pos);
+
+            if (pos < ARM_HIGH_BASKET_POS) {
+                return true;
+            } else {
+                arm.setPower(0);
+                return false;
+            }
+        }
+
+    }
+
+
+    // Extend classes
+    public class ContractAuto implements Action {
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                extend.setPower(ARM_CONTRACT_POWER);
+                initialized = true;
+            }
+
+
+            int pos = getExtendPos();
+            packet.put("extendPos", pos);
+
+            if (pos > ARM_CONTRACT_POS) {
+                return true;
+            } else {
+                extend.setPower(0);
+                return false;
+            }
+        }
+
+
+    }
+
+    public class ExtendToIntakeAuto implements Action {
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                if (getExtendPos() > ARM_EXTEND_INTAKE_POS) {
+                    arm.setPower(ARM_CONTRACT_POWER);
+                } else {
+                    arm.setPower(ARM_EXTEND_POWER);
+                }
+                initialized = true;
+            }
+
+
+            int pos = getExtendPos();
+            packet.put("extendPos", pos);
+
+            if (pos < ARM_EXTEND_INTAKE_POS+50 && pos > ARM_EXTEND_INTAKE_POS - 50) {
+                return true;
+            } else {
+                arm.setPower(0);
+                return false;
+            }
+        }
+
+
+    }
+
+    public class ExtendAuto implements Action {
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                extend.setPower(ARM_EXTEND_POWER);
+                initialized = true;
+            }
+
+
+            int pos = getExtendPos();
+            packet.put("extendPos", pos);
+
+            if (pos < ARM_EXTEND_POS) {
+                return true;
+            } else {
+                extend.setPower(0);
+                return false;
+            }
+        }
+
+
+    }
+
+    // Intake Actions
+    public class IntakeAuto implements Action {
+
+        private boolean initialized = false;
+        private int i = 0;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                intake.setPower(INTAKE_POWER);
+                initialized = true;
+            }
+
+            packet.put("intakeCounter", i);
+
+            if (i < 1000) {
+                i += 1;
+                return true;
+            } else {
+                intake.setPower(0);
+                return false;
+            }
+        }
+
+
+    }
+    public class OuttakeAuto implements Action {
+
+        private boolean initialized = false;
+        private int i = 0;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                intake.setPower(OUTTAKE_POWER);
+                initialized = true;
+            }
+
+            packet.put("outtakeCounter", i);
+
+            if (i < 1000) {
+                i += 1;
+                return true;
+            } else {
+                intake.setPower(0);
+                return false;
+            }
+        }
+
+
     }
 
 }

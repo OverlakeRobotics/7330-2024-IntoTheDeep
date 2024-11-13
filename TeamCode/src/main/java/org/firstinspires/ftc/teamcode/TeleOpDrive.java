@@ -84,6 +84,10 @@ public class TeleOpDrive extends OpMode {
             intake.extendStop();
         }
 
+        if (gamepad1.dpad_left) {
+            intake.armToHighBasket();
+        }
+
 
         telemetryData();
 

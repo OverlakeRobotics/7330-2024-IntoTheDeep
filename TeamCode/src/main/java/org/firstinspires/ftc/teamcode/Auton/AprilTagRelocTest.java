@@ -24,7 +24,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "Blue Team Autonomous Close", group = "Autonomous")
+
 public class AprilTagRelocTest extends LinearOpMode {
 
     private SparkFunOTOSDrive drive;

@@ -5,12 +5,13 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Intake {
 
     public static final int ARM_GROUND_POS = 0;
-    public static final int ARM_INTAKE_POS = 250;
+    //public static final int ARM_INTAKE_POS = 250;
     public static final int ARM_LIFT_POS = 250;
     public static final int ARM_LOW_BASKET_POS = 3000;
     public static final int ARM_HIGH_BASKET_POS = 1825;
@@ -26,6 +27,7 @@ public class Intake {
     public static final double OUTTAKE_POWER = 0.7d;
 
     private static final double SLOW_FACTOR = 0.5;
+    private static final int EXTEND_MAX = 3500;
 
     private boolean slowMode;
 
@@ -33,14 +35,14 @@ public class Intake {
     private int armPosLeft;
     private int armPosRight;
 
-    private DcMotor armLeft;
-    private DcMotor armRight;
+    private DcMotor arm1;
+    private DcMotor arm2;
     private DcMotor extend;
     private DcMotor intake;
 
     public Intake(HardwareMap hardwareMap) {
-        this.armLeft = hardwareMap.get(DcMotor.class, "leftArm");
-        this.armRight = hardwareMap.get(DcMotor.class, "rightArm");
+        this.arm1 = hardwareMap.get(DcMotor.class, "leftArm");
+        this.arm2 = hardwareMap.get(DcMotor.class, "rightArm");
         this.extend = hardwareMap.get(DcMotor.class, "armExtend");
         this.intake = hardwareMap.get(DcMotor.class, "intake");
 
@@ -50,30 +52,30 @@ public class Intake {
     }
 
     public void initMotors() {
-        armLeft.setDirection(DcMotor.Direction.REVERSE);
-        armRight.setDirection(DcMotor.Direction.FORWARD);
+        arm1.setDirection(DcMotor.Direction.REVERSE);
+        arm2.setDirection(DcMotor.Direction.FORWARD);
         extend.setDirection(DcMotor.Direction.FORWARD);
         intake.setDirection(DcMotor.Direction.FORWARD);
 
-        armLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        armLeft.setTargetPosition(0);
-        armRight.setTargetPosition(0);
+//        arm1.setTargetPosition(0);
+//        arm2.setTargetPosition(1);
 
-        armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
-        armLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        armRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        arm1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        arm2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        armLeft.setPower(ARM_POWER);
-        armRight.setPower(ARM_POWER);
+        arm1.setPower(0);
+        arm2.setPower(0);
         extend.setPower(0);
         intake.setPower(0);
     }
@@ -104,9 +106,9 @@ public class Intake {
         return armToPos(ARM_HIGH_BASKET_POS, ARM_POWER);
     }
     public boolean armToPos(int pos, double power) {
-        armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        return driveToPos(armLeft, armRight, pos, power);
+        arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        return driveToPos(arm1, arm2, pos, power);
     }
 
     public void intake() {
@@ -120,33 +122,28 @@ public class Intake {
     }
 
     public void driveArm(double power) {
-        armLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armLeft.setPower(power);
-        armRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armRight.setPower(power);
+        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm1.setPower(power);
     }
 
     public void driveArmUp() {
-        armLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armLeft.setPower(ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
-        armRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armRight.setPower(ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
+        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm1.setPower(ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
+        arm2.setPower(ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
+
     }
     public void driveArmDown() {
-        armLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armLeft.setPower(-ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
-        armRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armRight.setPower(-ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
+        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm1.setPower(-ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
+        arm2.setPower(-ARM_POWER * (slowMode ? SLOW_FACTOR : 1));
     }
     public void armStop () {
-        if (!(Math.abs(armPosLeft - armLeft.getCurrentPosition()) < 25)) {
-            armPosLeft = armLeft.getCurrentPosition();
-            armPosRight = armRight.getCurrentPosition();
-        }
-        armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armLeft.setTargetPosition(armPosLeft);
-        armRight.setTargetPosition(armPosRight);
+        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm1.setPower(0);
+        arm2.setPower(0);
     }
 
 
@@ -156,8 +153,12 @@ public class Intake {
     }
 
     public void driveExtendUp() {
-        extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        extend.setPower(ARM_EXTEND_POWER * (slowMode ? SLOW_FACTOR : 1));
+        if (getExtendPos() > EXTEND_MAX) {
+            extendStop();
+        } else {
+            extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            extend.setPower(ARM_EXTEND_POWER * (slowMode ? SLOW_FACTOR : 1));
+        }
     }
     public void driveExtendDown() {
         extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -178,16 +179,14 @@ public class Intake {
 
 
     public int getArmPos() {
-        return (armLeft.getCurrentPosition() + armRight.getCurrentPosition())/2;
+        return arm1.getCurrentPosition();
     }
     public int getExtendPos() {
         return extend.getCurrentPosition();
     }
     public void resetArmPos() {
-        armLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        armRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     public void resetExtendPos() {
         extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -266,10 +265,8 @@ public class Intake {
         public boolean run(@NonNull TelemetryPacket packet) {
 
             if (!initialized) {
-                armLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                armLeft.setPower(-ARM_POWER);
-                armRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                armRight.setPower(-ARM_POWER);
+                arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                arm1.setPower(-ARM_POWER);
                 initialized = true;
             }
 
@@ -280,8 +277,7 @@ public class Intake {
             if (pos > 0) {
                 return true;
             } else {
-                armLeft.setPower(0);
-                armRight.setPower(0);
+                arm1.setPower(0);
                 return false;
             }
         }
@@ -297,16 +293,12 @@ public class Intake {
         public boolean run(@NonNull TelemetryPacket packet) {
 
             if (!initialized) {
-                armLeft.setTargetPosition(ARM_LIFT_POS);
-                armRight.setTargetPosition(ARM_LIFT_POS);
-                armLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                arm1.setTargetPosition(ARM_LIFT_POS);
+                arm1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 if (getArmPos() > ARM_LIFT_POS) {
-                    armLeft.setPower(-ARM_POWER);
-                    armRight.setPower(-ARM_POWER);
+                    arm1.setPower(-ARM_POWER);
                 } else {
-                    armLeft.setPower(ARM_POWER);
-                    armRight.setPower(ARM_POWER);
+                    arm1.setPower(ARM_POWER);
                 }
                 initialized = true;
             }
@@ -318,8 +310,7 @@ public class Intake {
             if (pos > ARM_LIFT_POS+50 || pos < ARM_LIFT_POS - 50) {
                 return true;
             } else {
-                armLeft.setPower(0);
-                armRight.setPower(0);
+                arm1.setPower(0);
                 return false;
             }
         }
@@ -334,10 +325,8 @@ public class Intake {
         public boolean run(@NonNull TelemetryPacket packet) {
 
             if (!initialized) {
-                armLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                armLeft.setPower(ARM_POWER);
-                armRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                armRight.setPower(ARM_POWER);
+                arm1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                arm1.setPower(ARM_POWER);
                 initialized = true;
             }
 
@@ -348,8 +337,7 @@ public class Intake {
             if (pos < ARM_LOW_BASKET_POS) {
                 return true;
             } else {
-                armLeft.setPower(0);
-                armRight.setPower(0);
+                arm1.setPower(0);
                 return false;
             }
         }
@@ -365,11 +353,9 @@ public class Intake {
 
             if (!initialized) {
                 //armLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                armLeft.setPower(ARM_POWER);
+                arm1.setPower(ARM_POWER);
                 //armRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                armRight.setPower(ARM_POWER);
-                armLeft.setTargetPosition(ARM_HIGH_BASKET_POS);
-                armRight.setTargetPosition(ARM_HIGH_BASKET_POS);
+                arm1.setTargetPosition(ARM_HIGH_BASKET_POS);
                 initialized = true;
             }
 
@@ -430,9 +416,9 @@ public class Intake {
                 extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 if (getExtendPos() > ARM_EXTEND_INTAKE_POS) {
-                    armLeft.setPower(ARM_CONTRACT_POWER);
+                    arm1.setPower(ARM_CONTRACT_POWER);
                 } else {
-                    armLeft.setPower(ARM_EXTEND_POWER);
+                    arm1.setPower(ARM_EXTEND_POWER);
                 }
                 initialized = true;
             }
@@ -444,7 +430,7 @@ public class Intake {
             if (pos < ARM_EXTEND_INTAKE_POS+50 && pos > ARM_EXTEND_INTAKE_POS - 50) {
                 return true;
             } else {
-                armLeft.setPower(0);
+                arm1.setPower(0);
                 return false;
             }
         }

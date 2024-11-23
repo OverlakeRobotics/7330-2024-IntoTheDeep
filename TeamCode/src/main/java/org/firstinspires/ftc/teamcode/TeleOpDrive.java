@@ -71,7 +71,12 @@ public class TeleOpDrive extends OpMode {
             intake.resetExtendPos();
         }
         if (gamepad1.y) {
+            intake.driveExtendDown();
+            intake.driveArmDown();
             //TODO: Hang Routine
+        } else {
+            intake.armStop();
+            intake.extendStop();
         }
 
 

@@ -30,7 +30,7 @@ public class RedAutonBasket extends LinearOpMode {
 
         TrajectoryActionBuilder t1 = drive.actionBuilder(initialPose)
                 .strafeTo(new Vector2d(-37, -55))
-                .strafeToLinearHeading(new Vector2d(-48.5, -53.5), Math.toRadians(-133));
+                .strafeToLinearHeading(new Vector2d(-49.5, -54.5), Math.toRadians(-133));
 //                .strafeTo(new Vector2d(-51,-58))
 //                .turn(Math.toRadians(28));
         // Outtake Block
@@ -61,7 +61,7 @@ public class RedAutonBasket extends LinearOpMode {
                 intake.extendAuto(),
                 intake.outtakeAuto(),
                 intake.contractAuto(),
-                intake.armToLiftAuto()
+                intake.armToFloorAuto()
                 //a2
         ));
 

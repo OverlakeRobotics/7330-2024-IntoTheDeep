@@ -29,7 +29,7 @@ public class BlueAutonBasket extends LinearOpMode {
 
         TrajectoryActionBuilder t1 = drive.actionBuilder(initialPose)
                 .strafeTo(new Vector2d(37, 55))
-                .strafeToLinearHeading(new Vector2d(49.5, 54.5), Math.toRadians(47));
+                .strafeToLinearHeading(new Vector2d(50.5, 55.5), Math.toRadians(47));
 
 //                .strafeTo(new Vector2d(-51,-58))
 //                .turn(Math.toRadians(28));
@@ -61,7 +61,7 @@ public class BlueAutonBasket extends LinearOpMode {
                 intake.extendAuto(),
                 intake.outtakeAuto(),
                 intake.contractAuto(),
-                intake.armToLiftAuto()
+                intake.armToFloorAuto()
                 //a2
         ));
 

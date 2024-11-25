@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.components.Drive;
 import org.firstinspires.ftc.teamcode.components.Intake;
@@ -13,6 +14,10 @@ public class TeleOpDrive extends OpMode {
     private boolean toggleB = false;
 
 
+    private boolean armMoving = false;
+    private boolean extendMoving = false;
+    private boolean intakeMoving = false;
+
     Intake intake;
     Drive drive;
 
@@ -22,13 +27,16 @@ public class TeleOpDrive extends OpMode {
         intake = new Intake(hardwareMap);
         drive = new Drive(hardwareMap);
 
-
+        intake.extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intake.extend.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
 
 
     @Override
     public void loop() {
+
+
 
         float x = gamepad1.left_stick_x;
         float y = gamepad1.left_stick_y;
@@ -37,19 +45,36 @@ public class TeleOpDrive extends OpMode {
         drive.drive(x, y, theta);
 
         if (gamepad1.left_bumper) {
-            intake.driveArmUp();
+            if (!(intake.arm1.getPower() > 0.5)) {
+                intake.arm1.setPower(0.3);
+                intake.arm2.setPower(0.3);
+                armMoving = true;
+            }
         } else if (gamepad1.right_bumper) {
-            intake.driveArmDown();
+            if (!(intake.arm1.getPower() < -0.5)) {
+                intake.arm1.setPower(-1);
+                intake.arm2.setPower(-1);
+                armMoving = true;
+            }
         } else {
-            intake.armStop();
+            intake.arm1.setPower(0);
+            intake.arm2.setPower(0);
+            armMoving = false;
         }
 
         if (gamepad1.right_trigger > 0.1) {
-            intake.intake();
+            if (!intakeMoving) {
+                intake.intake();
+                intakeMoving = true;
+            }
         } else if (gamepad1.left_trigger > 0.1) {
-            intake.outtake();
+            if (!intakeMoving) {
+                intake.outtake();
+                intakeMoving = true;
+            }
         } else {
             intake.intakeStop();
+            intakeMoving = false;
         }
 
         if (gamepad1.a && !toggleA) {
@@ -70,9 +95,10 @@ public class TeleOpDrive extends OpMode {
             intake.resetArmPos();
             intake.resetExtendPos();
         }
-        if (gamepad1.y) {
-            intake.driveExtendDown();
-            intake.driveArmDown();
+        if (gamepad1.x && gamepad1.y) {
+            intake.extend.setPower(-1);
+            intake.arm1.setPower(1);
+            intake.arm2.setPower(1);
             //TODO: Hang Routine
         } else {
             intake.armStop();
@@ -81,16 +107,40 @@ public class TeleOpDrive extends OpMode {
 
 
         if (gamepad1.dpad_up) {
-            intake.driveExtendUp();
+//            if (intake.extend.getCurrentPosition() > 2500) {
+//                intake.extend.setPower(0);
+//            }
+            //ELSE
+            if (!(intake.extend.getPower() > 0.5)) {
+                intake.extend.setPower(1);
+            }
+
         }
         else if (gamepad1.dpad_down) {
-            intake.driveExtendDown();
+
+            if (!(intake.arm1.getPower() < -0.5)) {
+                intake.extend.setPower(-1);
+                armMoving = true;
+            }
+
         } else {
-            intake.extendStop();
+            intake.extend.setPower(0);
+            extendMoving = false;
         }
 
         if (gamepad1.dpad_left) {
-            intake.armToHighBasket();
+            if (intake.arm1.getCurrentPosition() < 775){
+                if (!(intake.arm1.getPower() > 0.5)) {
+                    intake.arm1.setPower(-0.85);
+                    intake.arm2.setPower(-0.85);
+                    armMoving = true;
+                }
+            }
+            else {
+                intake.arm1.setPower(0);
+                intake.arm2.setPower(0);
+            }
+
         }
 
 
